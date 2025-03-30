@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Safely Shy</title>
+    <link href="https://fonts.googleapis.com/css2?family=Special+Elite&display=swap" rel="stylesheet">
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <style>
+        /* RESET */
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            font-family: 'Special Elite', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            background-color: #4a0000 !important;
+            color: #ff3333 !important;
+            transition: all 0.5s ease;
+            position: relative;
+            overflow: hidden; /* Disable scrolling */
+            animation: shake 0.1s infinite;
+        }
+
+        /* CANVAS FOR PARTICLES */
+        #particles-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            pointer-events: none;
+            display: block;
+        }
+
+        /* GRADIENT BACKGROUND */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                45deg,
+                rgba(255,0,0,0.3) 0%,
+                rgba(139,0,0,0.1) 20%,
+                rgba(139,0,0,0.1) 80%,
+                rgba(255,0,0,0.3) 100%
+            ) !important;
+            z-index: -1;
+            animation: gradientMove 25s linear infinite;
+            transform: rotate(0deg);
+        }
+
+        /* LIGHT MODE */
+        body.light-mode {
+            background-color: #ff9999 !important;
+            color: #800000 !important;
+        }
+
+        body.light-mode::before {
+            background: linear-gradient(
+                45deg,
+                rgba(139,0,0,0.4) 0%,
+                rgba(139,0,0,0.1) 20%,
+                rgba(139,0,0,0.1) 80%,
+                rgba(139,0,0,0.4) 100%
+            ) !important;
+        }
+
+        /* ANIMATIONS */
+        @keyframes gradientMove {
+            0% { transform: translate(0%, 0%) rotate(0deg); }
+            100% { transform: translate(-25%, -25%) rotate(360deg); }
+        }
+
+        @keyframes pulse {
+            0% { filter: drop-shadow(0 0 10px rgba(255,0,0,0.8)); transform: scale(1); }
+            50% { filter: drop-shadow(0 0 30px rgba(255,0,0,1)); transform: scale(1.1); }
+            100% { filter: drop-shadow(0 0 10px rgba(255,0,0,0.8)); transform: scale(1); }
+        }
+
+        @keyframes shake {
+            0% { transform: translate(0.5px, 0.3px) rotate(0.2deg); }
+            25% { transform: translate(-0.3px, -0.5px) rotate(-0.2deg); }
+            50% { transform: translate(-0.5px, 0.3px) rotate(0.2deg); }
+            75% { transform: translate(0.3px, -0.3px) rotate(-0.2deg); }
+            100% { transform: translate(0, 0) rotate(0deg); }
+        }
+
+        @keyframes dots {
+            0%, 20% { opacity: 0; }
+            40%, 60% { opacity: 1; }
+            80%, 100% { opacity: 0; }
+        }
+
+        @keyframes logoMove {
+            0% {
+                transform: translate(-50%, -50%) scale(1);
+                top: 50%;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(0.8);
+                top: 35%;
+            }
+        }
+
+        @keyframes textFadeIn {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        /* LOADER */
+        .loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #4a0000;
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 1;
+            transition: opacity 0.5s ease;
+        }
+
+        body.light-mode .loader {
+            background: #ff9999;
+        }
+
+        .loader-dots {
+            display: flex;
+            gap: 8px;
+        }
+
+        .loader-dot {
+            width: 10px;
+            height: 10px;
+            background: #ff3333;
+            border-radius: 50%;
+            animation: dots 1.5s infinite;
+        }
+
+        .loader-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .loader-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        body.light-mode .loader-dot {
+            background: #800000;
+        }
+
+        /* LOGO WRAPPER */
+        .logo-wrapper {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        #logo {
+            width: 250px;
+            height: 250px;
+            background-image: url('logo.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            transition: all 0.3s ease;
+            cursor: default;
+            filter: drop-shadow(0 0 10px rgba(255,0,0,0.8));
+            animation: pulse 1s infinite;
+        }
+
+        body.light-mode #logo {
+            filter: drop-shadow(0 0 10px rgba(139,0,0,0.8));
+        }
+
+        #logo:hover {
+            transform: scale(1.05);
+            filter: 
+                drop-shadow(0 0 15px rgba(255,0,0,1))
+                drop-shadow(0 0 30px rgba(255,0,0,0.6));
+        }
+
+        body.light-mode #logo:hover {
+            filter: 
+                drop-shadow(0 0 15px rgba(139,0,0,1))
+                drop-shadow(0 0 30px rgba(139,0,0,0.6));
+        }
+
+        /* CONTENT */
+        .content {
+            color: #ff3333;
+            font-size: 18px;
+            text-align: center;
+            max-width: 600px;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+            cursor: default;
+            opacity: 0;
+            position: relative;
+            will-change: transform;
+            font-family: 'Special Elite', cursive;
+            text-shadow: 0 0 10px rgba(255,0,0,0.8), 0 0 20px rgba(255,0,0,0.4);
+        }
+
+        body.light-mode .content {
+            color: #800000;
+            text-shadow: 0 0 10px rgba(139,0,0,0.8), 0 0 20px rgba(139,0,0,0.4);
+        }
+
+        .content:hover {
+            transform: scale(1.05);
+            filter: 
+                drop-shadow(0 0 15px rgba(255,0,0,1))
+                drop-shadow(0 0 30px rgba(255,0,0,0.6));
+        }
+
+        body.light-mode .content:hover {
+            filter: 
+                drop-shadow(0 0 15px rgba(139,0,0,1))
+                drop-shadow(0 0 30px rgba(139,0,0,0.6));
+        }
+
+        /* INPUT FIELD */
+        .input-container {
+            margin-top: 20px;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        #input-field {
+            background-color: rgba(80,0,0,0.95);
+            border: 2px solid #ff3333;
+            border-radius: 10px;
+            padding: 10px;
+            color: #ff6666;
+            font-family: 'Special Elite', cursive;
+            font-size: 18px;
+            width: 200px;
+            text-align: center;
+            outline: none;
+            box-shadow: 0 0 10px rgba(255,0,0,0.5);
+            transition: all 0.3s ease;
+        }
+
+        #input-field:hover, #input-field:focus {
+            border-color: #ff6666;
+            box-shadow: 0 0 15px rgba(255,0,0,0.8);
+            transform: scale(1.05);
+        }
+
+        body.light-mode #input-field {
+            background-color: rgba(255,150,150,0.95);
+            border-color: #800000;
+            color: #800000;
+        }
+
+        body.light-mode #input-field:hover, body.light-mode #input-field:focus {
+            border-color: #a00000;
+            box-shadow: 0 0 15px rgba(139,0,0,0.8);
+        }
+
+        /* ERROR MESSAGE */
+        #error-message {
+            color: #ff3333;
+            font-family: 'Special Elite', cursive;
+            font-size: 16px;
+            margin-top: 10px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            text-shadow: 0 0 10px rgba(255,0,0,0.8);
+        }
+
+        body.light-mode #error-message {
+            color: #800000;
+            text-shadow: 0 0 10px rgba(139,0,0,0.8);
+        }
+
+        /* CONTROLS */
+        .theme-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 100;
+            filter: grayscale(0%) contrast(150%) brightness(1);
+            color: #ff3333;
+            opacity: 0.4;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            opacity: 0.7;
+        }
+
+        body.light-mode .theme-toggle {
+            color: #800000;
+        }
+
+        /* FULLSCREEN TOGGLE */
+        .fullscreen-toggle {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 100;
+            filter: grayscale(0%) contrast(150%) brightness(1);
+            color: #ff3333;
+            opacity: 0.4;
+        }
+
+        .fullscreen-toggle:hover {
+            transform: scale(1.1);
+            opacity: 0.7;
+        }
+
+        body.light-mode .fullscreen-toggle {
+            color: #800000;
+        }
+
+        /* LANGUAGE MENU */
+        .language-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+        }
+
+        .language-btn {
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            filter: grayscale(0%) contrast(150%) brightness(1);
+            color: #ff3333;
+            opacity: 0.4;
+        }
+
+        .language-btn:hover {
+            transform: scale(1.1);
+            opacity: 0.7;
+        }
+
+        body.light-mode .language-btn {
+            color: #800000;
+        }
+
+        .language-menu {
+            position: absolute;
+            top: 50px;
+            right: 0;
+            background-color: rgba(80,0,0,0.95);
+            border-radius: 15px;
+            padding: 10px 0;
+            min-width: 120px;
+            display: none;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .language-menu.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .language-menu.closing {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+
+        .language-option {
+            color: #ff6666;
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            opacity: 0;
+            transform: translateX(10px);
+            animation: slideIn 0.3s forwards;
+        }
+
+        body.light-mode .language-option {
+            color: #800000;
+        }
+
+        @keyframes slideIn {
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .language-menu.active .language-option:nth-child(1) { animation-delay: 0.1s; }
+        .language-menu.active .language-option:nth-child(2) { animation-delay: 0.2s; }
+        .language-menu.active .language-option:nth-child(3) { animation-delay: 0.3s; }
+        .language-menu.active .language-option:nth-child(4) { animation-delay: 0.4s; }
+        .language-menu.active .language-option:nth-child(5) { animation-delay: 0.5s; }
+        .language-menu.active .language-option:nth-child(6) { animation-delay: 0.6s; }
+        .language-menu.active .language-option:nth-child(7) { animation-delay: 0.7s; }
+        .language-menu.active .language-option:nth-child(8) { animation-delay: 0.8s; }
+        .language-menu.active .language-option:nth-child(9) { animation-delay: 0.9s; }
+        .language-menu.active .language-option:nth-child(10) { animation-delay: 1.0s; }
+        .language-menu.active .language-option:nth-child(11) { animation-delay: 1.1s; }
+        .language-menu.active .language-option:nth-child(12) { animation-delay: 1.2s; }
+
+        body.light-mode .language-menu {
+            background-color: rgba(255,150,150,0.95);
+        }
+
+        /* RESPONSIVENESS */
+        @media (max-width: 768px) {
+            #logo {
+                width: 180px;
+                height: 180px;
+            }
+            .content {
+                font-size: 16px;
+                max-width: 90%;
+            }
+            #input-field {
+                width: 150px;
+                font-size: 16px;
+            }
+            #error-message {
+                font-size: 14px;
+            }
+            .theme-toggle, .language-btn, .fullscreen-toggle {
+                font-size: 20px;
+            }
+            .loader-dot {
+                width: 8px;
+                height: 8px;
+            }
+        }
+    </style>
+</head>
+<body oncontextmenu="return false;">
+    <!-- Preloader -->
+    <div class="loader" id="loader">
+        <div class="loader-dots">
+            <div class="loader-dot"></div>
+            <div class="loader-dot"></div>
+            <div class="loader-dot"></div>
+        </div>
+    </div>
+
+    <!-- Particles Canvas -->
+    <canvas id="particles-canvas"></canvas>
+
+    <!-- Logo Container -->
+    <div class="logo-wrapper" id="logo-wrapper">
+        <div id="logo"></div>
+        <div class="content" id="content">
+            <p id="rules-text">"Wędrowcy cieni, co w mroku wędrowali,<br>
+Pierwszą zagadkę z nocy rozwiązali,<br>
+Dzięki wam Safely Shy z ciszy się wynurzył,<br>
+Wiatr pochwał niesie, co waszym trudem huczy,<br>
+Wasza śmiałość rozjaśniła mrok głęboki,<br>
+Niech chwała wasza płynie w tej opowieści tokiem."<br><br>
+
+"Lecz ścieżka dalej w cieniu się rozciąga,<br>
+Druga zagadka w mroku na was czeka,<br>
+Safely i Shy w harmonii krok swój niosą,<br>
+Jak echa, co w ciszy swe tony unoszą,<br>
+W chaosie ładu ich serca się łączą,<br>
+Melodia cieni w mroku im się sączy.<br>
+W równowadze spokojnej, gdzie więzi się tli,<br>
+Ich siła w uścisku niewidocznym żył,<br>
+Gdy wsparcie się rodzi w tej nocy bez miary,<br>
+Harmonia kluczem w cieniu się wtulary.<br>
+Szukajcie w rytmie, co mrok w tańcu niesie,<br>
+Tam przejście czeka, gdzie dłoń dłoń poniesie."</p>
+            <div class="input-container" id="input-container">
+                <input type="text" id="input-field" placeholder="...">
+                <div id="error-message"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="theme-toggle" id="theme-toggle">☀️</div>
+    <div class="fullscreen-toggle" id="fullscreen-toggle">⛶</div>
+    <div class="language-container">
+        <div class="language-btn" id="language-btn">🌐</div>
+        <div class="language-menu" id="language-menu">
+            <div class="language-option" data-lang="en">English</div>
+            <div class="language-option" data-lang="pl">Polski</div>
+            <div class="language-option" data-lang="de">Deutsch</div>
+            <div class="language-option" data-lang="es">Español</div>
+            <div class="language-option" data-lang="fr">Français</div>
+            <div class="language-option" data-lang="pt">Português</div>
+            <div class="language-option" data-lang="ja">日本語</div>
+            <div class="language-option" data-lang="zh">中文</div>
+            <div class="language-option" data-lang="it">Italiano</div>
+            <div class="language-option" data-lang="ru">Русский</div>
+            <div class="language-option" data-lang="ko">한국어</div>
+            <div class="language-option" data-lang="ar">العربية</div>
+        </div>
+    </div>
+
+    <!-- Audio Elements -->
+    <audio id="easter-egg-hover-sound" src="easter-hover.mp3" preload="auto"></audio>
+
+    <script>
+        // DOM Elements
+        const loader = document.getElementById('loader');
+        const logoWrapper = document.getElementById('logo-wrapper');
+        const logo = document.getElementById('logo');
+        const content = document.getElementById('content');
+        const rulesText = document.getElementById('rules-text');
+        const inputContainer = document.getElementById('input-container');
+        const inputField = document.getElementById('input-field');
+        const errorMessage = document.getElementById('error-message');
+        const themeToggle = document.getElementById('theme-toggle');
+        const fullscreenToggle = document.getElementById('fullscreen-toggle');
+        const languageBtn = document.getElementById('language-btn');
+        const languageMenu = document.getElementById('language-menu');
+        const body = document.body;
+        const easterEggHoverSound = document.getElementById('easter-egg-hover-sound');
+        const canvas = document.getElementById('particles-canvas');
+        const ctx = canvas.getContext('2d');
+
+        // Language Options
+        const translations = {
+            en: `"Wanderers of shadows, who roamed in the dark,<br>
+Solved the first riddle from night’s mystic spark,<br>
+Thanks to you, Safely Shy from silence arose,<br>
+The wind bears praise, with your effort it blows,<br>
+Your boldness has lit the deepest of gloom,<br>
+Let your glory flow in this tale’s resume bloom."<br><br>
+
+"Yet the path stretches on in shadow’s embrace,<br>
+A second riddle awaits in the dark’s hidden space,<br>
+Safely and Shy in harmony tread their way,<br>
+Like echoes lifting tones in silence’s play,<br>
+In chaos of order, their hearts intertwine,<br>
+A melody of shadows in darkness divine.<br>
+In calm equilibrium where bonds softly glow,<br>
+Their strength in an unseen clasp did grow,<br>
+As support takes root in this boundless night,<br>
+Harmony’s key in shadows takes flight.<br>
+Seek the rhythm that darkness in dance does bring,<br>
+There lies the passage where hand lifts hand to sing."`,
+            pl: `"Wędrowcy cieni, co w mroku wędrowali,<br>
+Pierwszą zagadkę z nocy rozwiązali,<br>
+Dzięki wam Safely Shy z ciszy się wynurzył,<br>
+Wiatr pochwał niesie, co waszym trudem huczy,<br>
+Wasza śmiałość rozjaśniła mrok głęboki,<br>
+Niech chwała wasza płynie w tej opowieści tokiem."<br><br>
+
+"Lecz ścieżka dalej w cieniu się rozciąga,<br>
+Druga zagadka w mroku na was czeka,<br>
+Safely i Shy w harmonii krok swój niosą,<br>
+Jak echa, co w ciszy swe tony unoszą,<br>
+W chaosie ładu ich serca się łączą,<br>
+Melodia cieni w mroku im się sączy.<br>
+W równowadze spokojnej, gdzie więzi się tli,<br>
+Ich siła w uścisku niewidocznym żył,<br>
+Gdy wsparcie się rodzi w tej nocy bez miary,<br>
+Harmonia kluczem w cieniu się wtulary.<br>
+Szukajcie w rytmie, co mrok w tańcu niesie,<br>
+Tam przejście czeka, gdzie dłoń dłoń poniesie."`,
+            de: `"Schattenwanderer, die im Dunkeln zogen,<br>
+Lösten das erste Rätsel aus Nachts Betrügen,<br>
+Dank euch erhob sich Safely Shy aus Stille,<br>
+Der Wind trägt Lob, das euren Mühen gilte,<br>
+Eure Kühnheit erhellte tiefstes Dunkel weit,<br>
+Euer Ruhm fließe in dieser Erzählung Zeit."<br><br>
+
+"Doch der Pfad dehnt sich im Schatten fort,<br>
+Ein zweites Rätsel wartet am finsteren Ort,<br>
+Safely und Shy im Einklang ihre Schritte lenken,<br>
+Wie Echos, die in Stille Töne schenken,<br>
+Im Chaos der Ordnung ihre Herzen sich binden,<br>
+Eine Melodie der Schatten im Dunkel zu finden.<br>
+In ruhigem Gleichgewicht, wo Bande glühn,<br>
+Ihre Kraft im unsichtbaren Griff erblühn,<br>
+Wenn Hilfe erwächst in dieser Nacht ohne Maß,<br>
+Harmonie der Schlüssel, der Schatten umfasst.<br>
+Sucht den Rhythmus, den das Dunkel im Tanz trägt,<br>
+Dort liegt der Durchgang, wo Hand die Hand bewegt."`,
+            es: `"Caminantes de sombras, que en la oscuridad vagaron,<br>
+El primer enigma de la noche descifraron,<br>
+Gracias a vosotros, Safely Shy del silencio emergió,<br>
+El viento trae alabanzas que con vuestro esfuerzo sonó,<br>
+Vuestra audacia iluminó la profunda penumbra,<br>
+Que vuestra gloria fluya en este relato sin penumbra."<br><br>
+
+"Mas el sendero sigue en sombras extendido,<br>
+Un segundo enigma en la oscuridad os ha sido,<br>
+Safely y Shy en armonía su paso llevan,<br>
+Como ecos que en el silencio sus tonos elevan,<br>
+En el caos del orden sus corazones se unen,<br>
+Melodía de sombras que en la oscuridad fluyen.<br>
+En equilibrio sereno donde los lazos arden,<br>
+Su fuerza en un abrazo invisible guarden,<br>
+Cuando el apoyo nace en esta noche sin fin,<br>
+La armonía es la llave que en sombras cuelga al fin.<br>
+Buscad el ritmo que la oscuridad en danza trae,<br>
+Allí está el paso donde mano a mano alza es."`,
+            fr: `"Errants des ombres, qui dans l’obscurité marchèrent,<br>
+La première énigme de la nuit déchiffrèrent,<br>
+Grâce à vous, Safely Shy du silence s’éleva,<br>
+Le vent porte des louanges que votre effort grava,<br>
+Votre audace éclaircit les ténèbres profondes,<br>
+Que votre gloire coule en ce récit qui abonde."<br><br>
+
+"Mais le chemin s’étend encore dans l’ombre noire,<br>
+Une seconde énigme attend dans le mystère notoire,<br>
+Safely et Shy en harmonie leurs pas accordent,<br>
+Comme des échos dont le silence les notes tordent,<br>
+Dans le chaos de l’ordre leurs cœurs s’entrelacent,<br>
+Mélodie des ombres dans l’obscurité qui s’efface.<br>
+Dans un équilibre calme où les liens s’embrasent,<br>
+Leur force dans une étreinte invisible s’écrase,<br>
+Quand le soutien naît en cette nuit sans mesure,<br>
+L’harmonie est la clé qui dans l’ombre murmure.<br>
+Cherchez le rythme que l’obscurité en danse porte,<br>
+Là est le passage où main à main s’emporte."`,
+            pt: `"Vagantes das sombras, que na escuridão caminharam,<br>
+O primeiro enigma da noite decifraram,<br>
+Graças a vós, Safely Shy do silêncio surgiu,<br>
+O vento traz louvores que com vosso esforço rugiu,<br>
+Vossa ousadia iluminou a treva mais funda,<br>
+Que vossa glória flua nesta história que abunda."<br><br>
+
+"Mas o caminho se estende na sombra ainda,<br>
+Um segundo enigma na escuridão vos finda,<br>
+Safely e Shy em harmonia seus passos guiam,<br>
+Como ecos que no silêncio tons enviam,<br>
+No caos da ordem seus corações se ligam,<br>
+Melodia das sombras na escuridão se irrigam.<br>
+Em equilíbrio sereno onde laços se acendem,<br>
+Sua força num aperto invisível se prendem,<br>
+Quando o apoio brota nesta noite sem fim,<br>
+A harmonia é a chave que na sombra vem assim.<br>
+Buscai o ritmo que a escuridão em dança traz,<br>
+Lá está a passagem onde mão a mão se faz."`,
+            ja: `"影の旅人、闇の中を彷徨いし者、<br>
+夜の最初の謎を解き明かしけり、<br>
+君らのおかげでSafely Shyが静寂より現れ、<br>
+風が称賛を運び、君らの努力が響けり、<br>
+君らの大胆さが深い闇を照らし、<br>
+この物語の流れに君らの栄光が奔れり。"<br><br>
+
+"されど道は影の中にさらに伸び、<br>
+二つ目の謎が闇で君らを待てり、<br>
+SafelyとShyが調和して歩みを進め、<br>
+静寂の中、音色を浮かべるこだまの如し、<br>
+秩序の混沌で彼らの心が結ばれ、<br>
+闇の中、影の旋律が彼らに染まりけり。<br>
+穏やかな均衡で絆が灯り、<br>
+見えざる握りで彼らの力が生き、<br>
+この果てなき夜に支えが生まれし時、<br>
+調和が影に寄り添う鍵となれり。<br>
+闇が踊りに運ぶリズムを探せ、<br>
+そこに手が手を導く通路が待てり。"`,
+            zh: `"阴影的旅人，在黑暗中漫游之人，<br>
+解开了夜的第一道谜题，<br>
+因你们，Safely Shy从寂静中浮现，<br>
+风带来了赞美，随你们的努力轰鸣，<br>
+你们的勇敢照亮了深邃的黑暗，<br>
+让你们的光荣在这故事中流淌。"<br><br>
+
+"然而道路仍在阴影中延伸，<br>
+第二道谜题在黑暗中等待着你们，<br>
+Safely与Shy和谐地迈出步伐，<br>
+如寂静中回响的音调，<br>
+在秩序的混沌中，他们的心相连，<br>
+阴影的旋律在黑暗中渗入他们。<br>
+在平静的平衡中，纽带微微发光，<br>
+他们的力量在无形的紧握中生长，<br>
+当支持在这无边的夜中萌生，<br>
+和谐成为阴影中依偎的钥匙。<br>
+寻找黑暗在舞蹈中带来的节奏，<br>
+那里有手牵手的通道在等待。"`,
+            it: `"Viandanti delle ombre, che nel buio vagaste,<br>
+Il primo enigma della notte risolvete,<br>
+Grazie a voi Safely Shy dal silenzio emerse,<br>
+Il vento porta lodi che il vostro sforzo immerse,<br>
+Il vostro ardore ha illuminato l’oscurità profonda,<br>
+Che la vostra gloria scorra in questa storia feconda."<br><br>
+
+"Ma il sentiero nell’ombra ancora si stende,<br>
+Un secondo enigma nel buio vi attende,<br>
+Safely e Shy in armonia il passo muovono,<br>
+Come echi che nel silenzio toni scuovono,<br>
+Nel caos dell’ordine i loro cuori si legano,<br>
+Melodia d’ombre nel buio si piegano.<br>
+In equilibrio calmo dove i vincoli brillano,<br>
+La loro forza in una stretta invisibile stillano,<br>
+Quando il sostegno nasce in questa notte infinita,<br>
+L’armonia è la chiave che nell’ombra è avvita.<br>
+Cercate il ritmo che l’oscurità in danza offre,<br>
+Lì è il passaggio dove mano a mano soffre."`,
+            ru: `"Странники теней, что в темноте блуждали,<br>
+Первую загадку ночи разгадали,<br>
+Благодаря вам Safely Shy из тишины восстал,<br>
+Ветер хвалу несет, что ваш труд прославлял,<br>
+Ваша смелость осветила мрак глубокий,<br>
+Пусть слава ваша течет в рассказе строки."<br><br>
+
+"Но путь в тенях дальше простирается,<br>
+Вторая загадка во мраке дожидается,<br>
+Safely и Shy в гармонии шаг свой несут,<br>
+Как эхо, что в тишине тона ведут,<br>
+В хаосе порядка их сердца сливаются,<br>
+Мелодия теней во мраке струится.<br>
+В спокойном равновесии, где узы тлеют,<br>
+Их сила в невидимом сжатии зреет,<br>
+Когда поддержка в этой ночи без края,<br>
+Гармония ключом в тенях вырастает.<br>
+Ищите ритм, что мрак в танце несет,<br>
+Там проход ждет, где рука руку ведет."`,
+            ko: `"그림자의 방랑자들, 어둠 속을 헤매던 이들,<br>
+밤의 첫 번째 수수께끼를 풀었네,<br>
+너희 덕에 Safely Shy가 침묵에서 떠올랐고,<br>
+바람이 너희 노력으로 울리는 찬양을 나르네,<br>
+너희 대담함이 깊은 어둠을 밝혔으니,<br>
+이 이야기 속에 너희 영광이 흐르게 하라."<br><br>
+
+"그러나 길은 그림자 속으로 더 뻗어나가네,<br>
+두 번째 수수께끼가 어둠 속에서 너희를 기다리네,<br>
+Safely와 Shy가 조화 속에 발걸음을 옮기며,<br>
+침묵 속 음색을 띄우는 메아리처럼,<br>
+질서의 혼돈 속에서 그들의 마음이 얽히고,<br>
+어둠 속 그림자의 선율이 그들에게 스미네.<br>
+고요한 균형 속에서 유대가 타오르며,<br>
+보이지 않는 손아귀에서 그들의 힘이 살아나네,<br>
+이 끝없는 밤에 지지가 태어날 때,<br>
+조화가 그림자 속 열쇠로 다가오네.<br>
+어둠이 춤추며 가져오는 리듬을 찾아라,<br>
+거기에 손이 손을 이끄는 통로가 기다리네."`,
+            ar: `"متجولو الظلال، الذين جابوا الظلام،<br>
+حلوا اللغز الأول من الليل الغامض،<br>
+بفضلكم، خرج Safely Shy من الصمت،<br>
+الريح تحمل المديح الذي بجهدكم هدر،<br>
+جرأتكم أضاءت الظلمة العميقة،<br>
+فليتدفق مجدكم في سير هذه القصة."<br><br>
+
+"لكن الطريق يمتد في الظلال بعد،<br>
+لغز ثانٍ في الظلام ينتظركم،<br>
+Safely وShy يخطوان في انسجام،<br>
+كأصداء ترفع نغماتها في الصمت،<br>
+في فوضى النظام تتلاقى قلوبهم،<br>
+لحن الظلال في الظلام يتسرب إليهم.<br>
+في توازن هادئ حيث الروابط تتوهج،<br>
+قوتهم في قبضة غير مرئية تنبض،<br>
+عندما يولد الدعم في هذا الليل بلا حدود،<br>
+الانسجام مفتاح يعانق الظلال.<br>
+ابحثوا عن الإيقاع الذي يحمله الظلام في الرقص،<br>
+هناك الممر حيث يد ترفع يدًا."`
+        };
+
+        // Developer Tools Blocked Messages
+        const devToolsBlockedMessages = {
+            en: "Developer tools are blocked.",
+            pl: "Narzędzia deweloperskie zostały zablokowane.",
+            de: "Entwicklerwerkzeuge sind gesperrt.",
+            es: "Las herramientas de desarrollo están bloqueadas.",
+            fr: "Les outils de développement sont bloqués.",
+            pt: "As ferramentas de desenvolvimento estão bloqueadas.",
+            ja: "開発者ツールがブロックされています。",
+            zh: "开发者工具已被屏蔽。",
+            it: "Gli strumenti per sviluppatori sono bloccati.",
+            ru: "Инструменты разработчика заблокированы.",
+            ko: "개발자 도구가 차단되었습니다。",
+            ar: "تم حظر أدوات المطور."
+        };
+
+        // Correct Answers ("bratnia dłoń" translations, with "brotherly hand" and "kindred hand" for English)
+        const correctAnswers = {
+            en: ["brotherly hand", "kindred hand"],
+            pl: "bratnia dłoń",
+            de: "brüderliche hand",
+            es: "mano fraternal",
+            fr: "main fraternelle",
+            pt: "mão fraterna",
+            ja: "兄弟の手",
+            zh: "兄弟之手",
+            it: "mano fraterna",
+            ru: "братская рука",
+            ko: "형제의 손",
+            ar: "يد أخوية"
+        };
+
+        // Error Messages ("Safely i Shy pracują razem" translations)
+        const errorMessages = {
+            en: "Safely and Shy work together.",
+            pl: "Safely i Shy pracują razem.",
+            de: "Safely und Shy arbeiten zusammen.",
+            es: "Safely y Shy trabajan juntos.",
+            fr: "Safely et Shy travaillent ensemble.",
+            pt: "Safely e Shy trabalham juntos.",
+            ja: "SafelyとShyは一緒に働きます。",
+            zh: "Safely和Shy一起工作。",
+            it: "Safely e Shy lavorano insieme。",
+            ru: "Safely и Shy работают вместе.",
+            ko: "Safely와 Shy가 함께 일합니다。",
+            ar: "Safely وShy يعملان معًا."
+        };
+
+        let currentLanguage = 'en';
+
+        // Particles Setup
+        let particlesArray = [];
+        const numberOfParticles = 50;
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * window.innerWidth;
+                this.y = Math.random() * window.innerHeight;
+                this.size = Math.random() * 2 + 1;
+                this.speedX = Math.random() * 0.5 - 0.25;
+                this.speedY = Math.random() * 0.5 - 0.25;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                if (this.x > window.innerWidth || this.x < 0) this.speedX = -this.speedX;
+                if (this.y > window.innerHeight || this.y < 0) this.speedY = -this.speedY;
+            }
+            draw() {
+                ctx.fillStyle = 'rgba(255,0,0,0.5)';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function initParticles() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            particlesArray = [];
+            for (let i = 0; i < numberOfParticles; i++) {
+                particlesArray.push(new Particle());
+            }
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let i = 0; i < particlesArray.length; i++) {
+                particlesArray[i].update();
+                particlesArray[i].draw();
+            }
+            requestAnimationFrame(animateParticles);
+        }
+
+        // Initialize
+        function init() {
+            body.classList.remove('light-mode');
+            themeToggle.textContent = '☀️';
+            fullscreenToggle.textContent = '⛶';
+            loader.style.display = 'flex';
+            loader.style.opacity = '1';
+
+            const userLanguage = navigator.language.split('-')[0];
+            const supportedLanguages = ['en', 'pl', 'de', 'es', 'fr', 'pt', 'ja', 'zh', 'it', 'ru', 'ko', 'ar'];
+            currentLanguage = supportedLanguages.includes(userLanguage) ? userLanguage : 'en';
+            setLanguage(currentLanguage);
+
+            themeToggle.addEventListener('click', toggleTheme);
+            fullscreenToggle.addEventListener('click', toggleFullscreen);
+            languageBtn.addEventListener('click', toggleLanguageMenu);
+            document.addEventListener('click', closeLanguageMenuOnClick);
+            inputField.addEventListener('keypress', handleInput);
+            
+            setupLanguageOptions();
+            setupHoverSounds();
+            initParticles();
+            animateParticles();
+            loadComplete();
+            blockDevTools();
+        }
+
+        // Language Functions
+        function setLanguage(lang) {
+            currentLanguage = lang;
+            localStorage.setItem('language', lang);
+            rulesText.innerHTML = translations[lang] || translations['en'];
+            inputField.placeholder = "..."; // Reset placeholder
+            errorMessage.textContent = ""; // Clear error message on language change
+            errorMessage.style.opacity = '0';
+        }
+
+        function setupLanguageOptions() {
+            document.querySelectorAll('.language-option').forEach(option => {
+                option.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const lang = e.target.dataset.lang;
+                    setLanguage(lang);
+                    closeLanguageMenu();
+                });
+            });
+        }
+
+        // Handle Input
+        function handleInput(e) {
+            if (e.key === 'Enter') {
+                const userInput = inputField.value.trim().toLowerCase();
+                const correctAnswer = Array.isArray(correctAnswers[currentLanguage]) 
+                    ? correctAnswers[currentLanguage].map(ans => ans.toLowerCase()) 
+                    : [correctAnswers[currentLanguage].toLowerCase()];
+                if (correctAnswer.includes(userInput)) {
+                    document.body.style.opacity = '0';
+                    setTimeout(() => {
+                        window.location.href = 'shy.html';
+                    }, 500);
+                } else {
+                    errorMessage.textContent = errorMessages[currentLanguage];
+                    errorMessage.style.opacity = '1';
+                    setTimeout(() => {
+                        errorMessage.style.opacity = '0';
+                        inputField.value = '';
+                    }, 2000);
+                }
+            }
+        }
+
+        // Smooth Audio Fade Out
+        function fadeOutAudio(audio) {
+            let volume = audio.volume;
+            const fadeOutInterval = setInterval(() => {
+                if (volume > 0) {
+                    volume = Math.max(0, volume - 0.1);
+                    audio.volume = volume;
+                } else {
+                    audio.pause();
+                    audio.volume = 1;
+                    clearInterval(fadeOutInterval);
+                }
+            }, 50);
+        }
+
+        // Hover Sounds
+        function setupHoverSounds() {
+            logo.addEventListener('mouseenter', () => {
+                if (easterEggHoverSound) {
+                    easterEggHoverSound.currentTime = 0;
+                    easterEggHoverSound.volume = 1;
+                    easterEggHoverSound.play().catch(() => console.log("Easter egg sound failed"));
+                }
+            });
+            
+            logo.addEventListener('mouseleave', () => {
+                if (easterEggHoverSound) {
+                    fadeOutAudio(easterEggHoverSound);
+                }
+            });
+
+            content.addEventListener('mouseenter', () => {
+                if (easterEggHoverSound) {
+                    easterEggHoverSound.currentTime = 0;
+                    easterEggHoverSound.volume = 1;
+                    easterEggHoverSound.play().catch(() => console.log("Easter egg sound failed"));
+                }
+            });
+            
+            content.addEventListener('mouseleave', () => {
+                if (easterEggHoverSound) {
+                    fadeOutAudio(easterEggHoverSound);
+                }
+            });
+        }
+
+        // Theme Toggle
+        function toggleTheme() {
+            body.classList.toggle('light-mode');
+            themeToggle.textContent = body.classList.contains('light-mode') ? '🌙' : '☀️';
+        }
+
+        // Fullscreen Toggle
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log(`Error attempting to enable fullscreen: ${err.message}`);
+                });
+                fullscreenToggle.textContent = '⤢';
+            } else {
+                document.exitFullscreen();
+                fullscreenToggle.textContent = '⛶';
+            }
+        }
+
+        // Language Menu
+        function toggleLanguageMenu(e) {
+            e.stopPropagation();
+            if (languageMenu.classList.contains('active')) {
+                closeLanguageMenu();
+            } else {
+                languageMenu.classList.add('active');
+                resetLanguageAnimations();
+            }
+        }
+
+        function closeLanguageMenuOnClick(e) {
+            if (!languageMenu.contains(e.target) && e.target !== languageBtn) {
+                closeLanguageMenu();
+            }
+        }
+
+        function closeLanguageMenu() {
+            if (languageMenu.classList.contains('active')) {
+                languageMenu.classList.add('closing');
+                languageMenu.addEventListener('transitionend', function handler() {
+                    languageMenu.classList.remove('active', 'closing');
+                    languageMenu.removeEventListener('transitionend', handler);
+                }, { once: true });
+            }
+        }
+
+        function resetLanguageAnimations() {
+            document.querySelectorAll('.language-option').forEach(option => {
+                option.style.animation = 'none';
+                void option.offsetWidth;
+                option.style.animation = '';
+            });
+        }
+
+        // Page Load
+        function loadComplete() {
+            setTimeout(() => {
+                loader.style.opacity = '0';
+                loader.addEventListener('transitionend', () => {
+                    loader.style.display = 'none';
+                    logoWrapper.style.opacity = '1';
+                    logoWrapper.style.left = '50%';
+                    logoWrapper.style.top = '50%';
+                    animateLogoAndContent();
+                }, { once: true });
+            }, 2000);
+        }
+
+        // Animate Logo and Content
+        function animateLogoAndContent() {
+            logoWrapper.style.animation = 'logoMove 1s ease forwards';
+            logoWrapper.addEventListener('animationend', () => {
+                logoWrapper.style.left = '50%';
+                logoWrapper.style.top = '35%';
+                logoWrapper.style.transform = 'translate(-50%, -50%) scale(0.8)';
+                content.style.opacity = '1';
+                content.style.animation = 'textFadeIn 0.5s ease forwards';
+                inputContainer.style.opacity = '1';
+            }, { once: true });
+        }
+
+        // Block Dev Tools with Translated Messages
+        function blockDevTools() {
+            document.addEventListener('keydown', (e) => {
+                if (
+                    e.key === 'F12' ||
+                    (e.ctrlKey && e.shiftKey && e.key === 'I') ||
+                    (e.ctrlKey && e.key === 'U')
+                ) {
+                    e.preventDefault();
+                    alert(devToolsBlockedMessages[currentLanguage] || devToolsBlockedMessages['en']);
+                }
+            });
+
+            (function checkDevTools() {
+                const widthThreshold = window.outerWidth - window.innerWidth > 160;
+                const heightThreshold = window.outerHeight - window.innerHeight > 160;
+                if (widthThreshold || heightThreshold) {
+                    document.body.innerHTML = `<h1>${devToolsBlockedMessages[currentLanguage] || devToolsBlockedMessages['en']}</h1>`;
+                }
+                setTimeout(checkDevTools, 2000);
+            })();
+        }
+
+        // Force full reload on page load
+        window.addEventListener('pageshow', (event) => {
+            if (event.persisted) {
+                window.location.reload();
+            } else {
+                init();
+            }
+        });
+
+        // Resize Canvas
+        window.addEventListener('resize', () => {
+            initParticles();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Safely Shy</title>
+    <link href="https://fonts.googleapis.com/css2?family=Creepster&display=swap" rel="stylesheet">
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <style>
+        /* RESET */
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            background-color: #000;
+            transition: all 0.5s ease;
+            position: relative;
+        }
+
+        /* GRADIENT BACKGROUND */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                45deg,
+                rgba(255,255,255,0.03) 0%,
+                rgba(255,255,255,0) 20%,
+                rgba(255,255,255,0) 80%,
+                rgba(255,255,255,0.03) 100%
+            );
+            z-index: -1;
+            animation: gradientMove 25s linear infinite;
+            transform: rotate(0deg);
+        }
+
+        /* LIGHT MODE */
+        body.light-mode {
+            background-color: #fff;
+            color: #000;
+        }
+
+        body.light-mode::before {
+            background: linear-gradient(
+                45deg,
+                rgba(0,0,0,0.03) 0%,
+                rgba(0,0,0,0) 20%,
+                rgba(0,0,0,0) 80%,
+                rgba(0,0,0,0.03) 100%
+            );
+        }
+
+        /* EASTER EGG MODE */
+        body.easter-egg {
+            background-color: #4a0000 !important;
+            color: #ff3333 !important;
+            animation: shake 0.1s infinite;
+        }
+        
+        body.easter-egg::before {
+            background: linear-gradient(
+                45deg,
+                rgba(255,0,0,0.3) 0%,
+                rgba(139,0,0,0.1) 20%,
+                rgba(139,0,0,0.1) 80%,
+                rgba(255,0,0,0.3) 100%
+            ) !important;
+        }
+
+        body.easter-egg.light-mode {
+            background-color: #ff9999 !important;
+            color: #800000 !important;
+        }
+
+        body.easter-egg.light-mode::before {
+            background: linear-gradient(
+                45deg,
+                rgba(139,0,0,0.4) 0%,
+                rgba(139,0,0,0.1) 20%,
+                rgba(139,0,0,0.1) 80%,
+                rgba(139,0,0,0.4) 100%
+            ) !important;
+        }
+
+        /* ANIMATIONS */
+        @keyframes gradientMove {
+            0% { transform: translate(0%, 0%) rotate(0deg); }
+            100% { transform: translate(-25%, -25%) rotate(360deg); }
+        }
+
+        @keyframes pulse {
+            0% { filter: drop-shadow(0 0 10px rgba(255,0,0,0.8)); transform: scale(1); }
+            50% { filter: drop-shadow(0 0 30px rgba(255,0,0,1)); transform: scale(1.1); }
+            100% { filter: drop-shadow(0 0 10px rgba(255,0,0,0.8)); transform: scale(1); }
+        }
+
+        @keyframes shake {
+            0% { transform: translate(2px, 1px) rotate(0.5deg); }
+            25% { transform: translate(-1px, -2px) rotate(-0.5deg); }
+            50% { transform: translate(-2px, 1px) rotate(0.5deg); }
+            75% { transform: translate(1px, -1px) rotate(-0.5deg); }
+            100% { transform: translate(0, 0) rotate(0deg); }
+        }
+
+        @keyframes fadeOut {
+            to { opacity: 0; transform: scale(0.95); }
+        }
+
+        @keyframes dots {
+            0%, 20% { opacity: 0; }
+            40%, 60% { opacity: 1; }
+            80%, 100% { opacity: 0; }
+        }
+
+        /* PARTICLES */
+        #particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            pointer-events: none;
+            display: none;
+        }
+
+        body.easter-egg #particles {
+            display: block;
+        }
+
+        /* LOADER */
+        .loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 1;
+            transition: opacity 0.5s ease;
+        }
+
+        body.light-mode .loader {
+            background: #fff;
+        }
+
+        .loader-dots {
+            display: flex;
+            gap: 8px;
+        }
+
+        .loader-dot {
+            width: 10px;
+            height: 10px;
+            background: #fff;
+            border-radius: 50%;
+            animation: dots 1.5s infinite;
+        }
+
+        .loader-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .loader-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        body.light-mode .loader-dot {
+            background: #000;
+        }
+
+        body.easter-egg .loader {
+            background: #4a0000;
+        }
+
+        body.easter-egg .loader-dot {
+            background: #ff3333;
+        }
+
+        /* LOGO */
+        .logo-wrapper {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            will-change: transform;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        #logo {
+            width: 250px;
+            height: 250px;
+            background-image: url('logo.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            filter: drop-shadow(0 0 10px rgba(255,255,255,0.2));
+        }
+
+        body.light-mode #logo {
+            filter: invert(1) drop-shadow(0 0 10px rgba(0,0,0,0.2));
+        }
+
+        body.easter-egg #logo {
+            filter: drop-shadow(0 0 10px rgba(255,0,0,0.8));
+        }
+
+        .enter-text {
+            color: white;
+            margin-top: 20px;
+            font-size: 18px;
+            opacity: 0;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            pointer-events: none;
+        }
+
+        body.light-mode .enter-text {
+            color: #000;
+        }
+
+        body.easter-egg .enter-text {
+            color: #ff3333;
+            font-family: 'Creepster', cursive;
+            text-shadow: 0 0 10px rgba(255,0,0,0.8), 0 0 20px rgba(255,0,0,0.4);
+        }
+
+        /* HOVER EFFECTS */
+        #logo:hover {
+            transform: scale(1.05);
+            filter: 
+                drop-shadow(0 0 10px rgba(255, 255, 255, 0.5))
+                drop-shadow(0 0 20px rgba(255, 255, 255, 0.2));
+        }
+
+        body.light-mode #logo:hover {
+            filter: 
+                invert(1)
+                drop-shadow(0 0 10px rgba(0, 0, 0, 0.3))
+                drop-shadow(0 0 20px rgba(0, 0, 0, 0.1));
+        }
+
+        body.easter-egg #logo:hover {
+            filter: 
+                drop-shadow(0 0 15px rgba(255, 0, 0, 1))
+                drop-shadow(0 0 30px rgba(255, 0, 0, 0.6));
+        }
+
+        #logo:hover + .enter-text {
+            opacity: 1;
+            transform: translateY(5px);
+        }
+
+        /* CONTROLS */
+        .theme-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 100;
+            filter: grayscale(100%) contrast(200%) brightness(0.7);
+            opacity: 0.3;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            filter: grayscale(100%) contrast(200%) brightness(0.9);
+            opacity: 0.6;
+        }
+
+        body.easter-egg .theme-toggle {
+            filter: grayscale(0%) contrast(150%) brightness(1);
+            color: #ff3333;
+            opacity: 0.4;
+        }
+
+        body.easter-egg .theme-toggle:hover {
+            opacity: 0.7;
+        }
+
+        /* FULLSCREEN TOGGLE */
+        .fullscreen-toggle {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 100;
+            color: rgba(255, 255, 255, 0.5); /* Subtelniejszy w trybie ciemnym */
+            opacity: 0.3; /* Mniej widoczny */
+        }
+
+        .fullscreen-toggle:hover {
+            transform: scale(1.1);
+            color: rgba(255, 255, 255, 0.8);
+            opacity: 0.6;
+        }
+
+        body.light-mode .fullscreen-toggle {
+            color: rgba(0, 0, 0, 0.7);
+            opacity: 0.5;
+        }
+
+        body.light-mode .fullscreen-toggle:hover {
+            color: rgba(0, 0, 0, 1);
+            opacity: 0.8;
+        }
+
+        body.easter-egg .fullscreen-toggle {
+            filter: grayscale(0%) contrast(150%) brightness(1);
+            color: #ff3333;
+            opacity: 0.4;
+        }
+
+        body.easter-egg .fullscreen-toggle:hover {
+            opacity: 0.7;
+        }
+
+        /* LANGUAGE MENU */
+        .language-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+        }
+
+        .language-btn {
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            filter: grayscale(100%) contrast(200%) brightness(0.7);
+            opacity: 0.3;
+        }
+
+        .language-btn:hover {
+            transform: scale(1.1);
+            filter: grayscale(100%) contrast(200%) brightness(0.9);
+            opacity: 0.6;
+        }
+
+        body.easter-egg .language-btn {
+            filter: grayscale(0%) contrast(150%) brightness(1);
+            color: #ff3333;
+            opacity: 0.4;
+        }
+
+        body.easter-egg .language-btn:hover {
+            opacity: 0.7;
+        }
+
+        .language-menu {
+            position: absolute;
+            top: 50px;
+            right: 0;
+            background-color: rgba(30, 30, 30, 0.95);
+            border-radius: 15px;
+            padding: 10px 0;
+            min-width: 120px;
+            display: none;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .language-menu.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .language-menu.closing {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+
+        .language-option {
+            color: white;
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            opacity: 0;
+            transform: translateX(10px);
+            animation: slideIn 0.3s forwards;
+        }
+
+        body.easter-egg .language-option {
+            color: #ff6666;
+        }
+
+        @keyframes slideIn {
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .language-menu.active .language-option:nth-child(1) { animation-delay: 0.1s; }
+        .language-menu.active .language-option:nth-child(2) { animation-delay: 0.2s; }
+        .language-menu.active .language-option:nth-child(3) { animation-delay: 0.3s; }
+        .language-menu.active .language-option:nth-child(4) { animation-delay: 0.4s; }
+        .language-menu.active .language-option:nth-child(5) { animation-delay: 0.5s; }
+        .language-menu.active .language-option:nth-child(6) { animation-delay: 0.6s; }
+        .language-menu.active .language-option:nth-child(7) { animation-delay: 0.7s; }
+        .language-menu.active .language-option:nth-child(8) { animation-delay: 0.8s; }
+        .language-menu.active .language-option:nth-child(9) { animation-delay: 0.9s; }
+        .language-menu.active .language-option:nth-child(10) { animation-delay: 1.0s; }
+        .language-menu.active .language-option:nth-child(11) { animation-delay: 1.1s; }
+        .language-menu.active .language-option:nth-child(12) { animation-delay: 1.2s; }
+
+        body.light-mode .language-menu {
+            background-color: rgba(240, 240, 240, 0.95);
+        }
+
+        body.light-mode .language-option {
+            color: #000;
+        }
+
+        body.easter-egg .language-menu {
+            background-color: rgba(80, 0, 0, 0.95);
+        }
+
+        body.easter-egg.light-mode .language-menu {
+            background-color: rgba(255, 150, 150, 0.95);
+        }
+
+        body.easter-egg.light-mode .language-option {
+            color: #800000;
+        }
+
+        /* HINTS */
+        .hint {
+            position: absolute;
+            color: rgba(255,255,255,0.3); /* Increased opacity for visibility */
+            font-size: 18px; /* Larger font size */
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            z-index: 5;
+            background: rgba(0, 0, 0, 0.2); /* Subtle background for contrast */
+            padding: 5px 10px; /* Padding for readability */
+            border-radius: 5px; /* Rounded corners */
+            text-shadow: 0 0 5px rgba(255,255,255,0.5); /* Glow effect */
+        }
+
+        body.light-mode .hint {
+            color: rgba(0,0,0,0.3); /* Adjusted for light mode */
+            text-shadow: 0 0 5px rgba(0,0,0,0.5); /* Glow for light mode */
+            background: rgba(255, 255, 255, 0.2); /* Light background */
+        }
+
+        body.easter-egg .hint {
+            color: rgba(255,0,0,0.7); /* More visible in easter egg mode */
+            font-family: 'Creepster', cursive;
+            text-shadow: 0 0 10px rgba(255,0,0,0.8); /* Stronger glow */
+            background: rgba(80, 0, 0, 0.3); /* Dark red background */
+        }
+
+        /* RESPONSIVENESS */
+        @media (max-width: 768px) {
+            #logo {
+                width: 180px;
+                height: 180px;
+            }
+            .enter-text {
+                font-size: 16px;
+            }
+            .theme-toggle, .language-btn, .fullscreen-toggle {
+                font-size: 20px;
+            }
+            .loader-dot {
+                width: 8px;
+                height: 8px;
+            }
+            .hint {
+                font-size: 14px; /* Slightly smaller on mobile */
+            }
+        }
+    </style>
+</head>
+<body oncontextmenu="return false;">
+    <!-- Particles -->
+    <canvas id="particles"></canvas>
+
+    <!-- Preloader -->
+    <div class="loader" id="loader">
+        <div class="loader-dots">
+            <div class="loader-dot"></div>
+            <div class="loader-dot"></div>
+            <div class="loader-dot"></div>
+        </div>
+    </div>
+
+    <!-- Logo Container -->
+    <div class="logo-wrapper" id="logo-wrapper">
+        <div id="logo"></div>
+        <div class="enter-text" id="enter-text">ENTER</div>
+    </div>
+
+    <!-- Hints -->
+    <div class="hint" id="hint"></div>
+
+    <!-- Controls -->
+    <div class="theme-toggle" id="theme-toggle">☀️</div>
+    <div class="fullscreen-toggle" id="fullscreen-toggle">⛶</div>
+    <div class="language-container">
+        <div class="language-btn" id="language-btn">🌐</div>
+        <div class="language-menu" id="language-menu">
+            <div class="language-option" data-lang="en">English</div>
+            <div class="language-option" data-lang="pl">Polski</div>
+            <div class="language-option" data-lang="de">Deutsch</div>
+            <div class="language-option" data-lang="es">Español</div>
+            <div class="language-option" data-lang="fr">Français</div>
+            <div class="language-option" data-lang="pt">Português</div>
+            <div class="language-option" data-lang="ja">日本語</div>
+            <div class="language-option" data-lang="zh">中文</div>
+            <div class="language-option" data-lang="it">Italiano</div>
+            <div class="language-option" data-lang="ru">Русский</div>
+            <div class="language-option" data-lang="ko">한국어</div>
+            <div class="language-option" data-lang="ar">العربية</div>
+        </div>
+    </div>
+
+    <!-- Audio Elements -->
+    <audio id="hover-sound" src="hover.mp3" preload="auto"></audio>
+    <audio id="easter-egg-hover-sound" src="easter-hover.mp3" preload="auto"></audio>
+
+    <script>
+        // DOM Elements
+        const loader = document.getElementById('loader');
+        const logoWrapper = document.getElementById('logo-wrapper');
+        const logo = document.getElementById('logo');
+        const enterText = document.getElementById('enter-text');
+        const themeToggle = document.getElementById('theme-toggle');
+        const fullscreenToggle = document.getElementById('fullscreen-toggle');
+        const languageBtn = document.getElementById('language-btn');
+        const languageMenu = document.getElementById('language-menu');
+        const hint = document.getElementById('hint');
+        const body = document.body;
+        const hoverSound = document.getElementById('hover-sound');
+        const easterEggHoverSound = document.getElementById('easter-egg-hover-sound');
+        const canvas = document.getElementById('particles');
+        const ctx = canvas.getContext('2d');
+
+        // Animation Variables
+        let mouseX = 0, mouseY = 0;
+        let wrapperX = 0, wrapperY = 0;
+        let isHovering = false;
+
+        // Easter Egg
+        let easterEggActive = false;
+        const easterEggSequence = ['s','a','f','e','l','y','s','h','y'];
+        let currentSequence = [];
+
+        // Language Options with Hints
+        const languageOptions = {
+            en: { 
+                enter: "ENTER", 
+                devToolsMessage: "Access to developer tools is blocked.", 
+                hints: ["Type something", "Safely Shy", "Write something", "Discover the page"],
+                easterHints: ["Help us", "Find us", "Silence is loud", "Sound is quiet"]
+            },
+            pl: { 
+                enter: "WEJŚCIE", 
+                devToolsMessage: "Dostęp do narzędzi deweloperskich jest zablokowany.", 
+                hints: ["Wpisz coś", "Safely Shy", "Napisz coś", "Odkryj stronę"],
+                easterHints: ["Pomóż nam", "Odnajdź nas", "Cisza jest głośna", "Dźwięk jest cichy"]
+            },
+            de: { 
+                enter: "EINGANG", 
+                devToolsMessage: "Der Zugriff auf Entwicklerwerkzeuge ist gesperrt.", 
+                hints: ["Tippe etwas", "Safely Shy", "Schreib etwas", "Entdecke die Seite"],
+                easterHints: ["Hilf uns", "Finde uns", "Stille ist laut", "Ton ist leise"]
+            },
+            es: { 
+                enter: "ENTRAR", 
+                devToolsMessage: "El acceso a las herramientas de desarrollador está bloqueado.", 
+                hints: ["Escribe algo", "Safely Shy", "Teclea algo", "Descubre la página"],
+                easterHints: ["Ayúdanos", "Encuéntranos", "El silencio es fuerte", "El sonido es débil"]
+            },
+            fr: { 
+                enter: "ENTRER", 
+                devToolsMessage: "L'accès aux outils de développement est bloqué.", 
+                hints: ["Tape quelque chose", "Safely Shy", "Écris quelque chose", "Découvre la page"],
+                easterHints: ["Aide-nous", "Trouve-nous", "Le silence est fort", "Le son est faible"]
+            },
+            pt: { 
+                enter: "ENTRAR", 
+                devToolsMessage: "O acesso às ferramentas de desenvolvedor está bloqueado.", 
+                hints: ["Digite algo", "Safely Shy", "Escreva algo", "Descubra a página"],
+                easterHints: ["Ajude-nos", "Encontre-nos", "O silêncio é alto", "O som é baixo"]
+            },
+            ja: { 
+                enter: "入る", 
+                devToolsMessage: "開発者ツールへのアクセスがブロックされています。", 
+                hints: ["何か入力", "Safely Shy", "何か書く", "ページを発見"],
+                easterHints: ["助けて", "見つけて", "静寂が大きい", "音が小さい"]
+            },
+            zh: { 
+                enter: "进入", 
+                devToolsMessage: "访问开发者工具已被阻止。", 
+                hints: ["输入一些", "Safely Shy", "写一些", "发现页面"],
+                easterHints: ["帮我们", "找我们", "沉默很响", "声音很轻"]
+            },
+            it: { 
+                enter: "ENTRARE", 
+                devToolsMessage: "L'accesso agli strumenti per sviluppatori è bloccato.", 
+                hints: ["Digita qualcosa", "Safely Shy", "Scrivi qualcosa", "Scopri la pagina"],
+                easterHints: ["Aiutaci", "Trovaci", "Il silenzio è forte", "Il suono è debole"]
+            },
+            ru: { 
+                enter: "ВОЙТИ", 
+                devToolsMessage: "Доступ к инструментам разработчика заблокирован.", 
+                hints: ["Введи что-то", "Safely Shy", "Напиши что-то", "Открой страницу"],
+                easterHints: ["Помоги нам", "Найди нас", "Тишина громкая", "Звук тихий"]
+            },
+            ko: { 
+                enter: "들어가다", 
+                devToolsMessage: "개발자 도구에 대한 액세스가 차단되었습니다.", 
+                hints: ["뭐든 입력", "Safely Shy", "뭐든 쓰기", "페이지를 발견"],
+                easterHints: ["도와줘", "찾아줘", "침묵이 크다", "소리가 작다"]
+            },
+            ar: { 
+                enter: "ادخل", 
+                devToolsMessage: "تم حظر الوصول إلى أدوات المطور.", 
+                hints: ["اكتب شيئًا", "Safely Shy", "ادخل شيئًا", "اكتشف الصفحة"],
+                easterHints: ["ساعدنا", "اعثر علينا", "الصمت عالٍ", "الصوت هادئ"]
+            }
+        };
+
+        let currentLanguage = 'en';
+
+        // Particles
+        let particlesArray = [];
+        const numberOfParticles = 50;
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * window.innerWidth;
+                this.y = Math.random() * window.innerHeight;
+                this.size = Math.random() * 2 + 1;
+                this.speedX = Math.random() * 0.5 - 0.25;
+                this.speedY = Math.random() * 0.5 - 0.25;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                if (this.x > window.innerWidth || this.x < 0) this.speedX = -this.speedX;
+                if (this.y > window.innerHeight || this.y < 0) this.speedY = -this.speedY;
+
+                const dx = mouseX + window.innerWidth / 2 - this.x;
+                const dy = mouseY + window.innerHeight / 2 - this.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                if (distance < 100) {
+                    this.x -= dx * 0.02;
+                    this.y -= dy * 0.02;
+                }
+            }
+            draw() {
+                ctx.fillStyle = 'rgba(255,0,0,0.5)';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function initParticles() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            particlesArray = [];
+            if (easterEggActive) {
+                for (let i = 0; i < numberOfParticles; i++) {
+                    particlesArray.push(new Particle());
+                }
+            }
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if (easterEggActive) {
+                for (let i = 0; i < particlesArray.length; i++) {
+                    particlesArray[i].update();
+                    particlesArray[i].draw();
+                }
+            }
+            requestAnimationFrame(animateParticles);
+        }
+
+        // Initialize
+        function init() {
+            localStorage.removeItem('easterEgg');
+            body.classList.remove('easter-egg', 'light-mode');
+            logo.style.animation = '';
+            themeToggle.textContent = '☀️';
+            fullscreenToggle.textContent = '⛶';
+            loader.style.display = 'flex';
+            loader.style.opacity = '1';
+            logoWrapper.style.opacity = '0';
+
+            const userLanguage = navigator.language.split('-')[0];
+            const supportedLanguages = ['en', 'pl', 'de', 'es', 'fr', 'pt', 'ja', 'zh', 'it', 'ru', 'ko', 'ar'];
+            currentLanguage = supportedLanguages.includes(userLanguage) ? userLanguage : 'en';
+            setLanguage(currentLanguage);
+
+            document.addEventListener('keydown', handleEasterEggInput);
+            themeToggle.addEventListener('click', toggleTheme);
+            fullscreenToggle.addEventListener('click', toggleFullscreen);
+            languageBtn.addEventListener('click', toggleLanguageMenu);
+            document.addEventListener('click', closeLanguageMenuOnClick);
+            
+            setupLanguageOptions();
+            setupLogoClickHandler();
+            setupHoverSounds();
+            followMouse();
+            loadComplete();
+            blockDevTools();
+            initParticles();
+            animateParticles();
+            showRandomHint();
+        }
+
+        // Language Functions
+        function setLanguage(lang) {
+            enterText.textContent = languageOptions[lang].enter;
+            currentLanguage = lang;
+            localStorage.setItem('language', lang);
+            showRandomHint();
+        }
+
+        function setupLanguageOptions() {
+            document.querySelectorAll('.language-option').forEach(option => {
+                option.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const lang = e.target.dataset.lang;
+                    setLanguage(lang);
+                    closeLanguageMenu();
+                });
+            });
+        }
+
+        // Easter Egg Functions
+        function handleEasterEggInput(e) {
+            currentSequence.push(e.key.toLowerCase());
+            if (currentSequence.length > easterEggSequence.length) {
+                currentSequence.shift();
+            }
+            
+            if (arraysEqual(currentSequence, easterEggSequence)) {
+                activateEasterEgg();
+                if (isHovering && hoverSound) {
+                    fadeOutAudio(hoverSound);
+                }
+            }
+        }
+
+        function arraysEqual(a, b) {
+            return a.length === b.length && a.every((val, index) => val === b[index]);
+        }
+
+        function activateEasterEgg() {
+            easterEggActive = true;
+            body.classList.add('easter-egg');
+            logo.style.animation = 'pulse 1s infinite';
+            setupLogoClickHandler();
+            setupHoverSounds();
+            initParticles();
+            showRandomHint();
+        }
+
+        // Logo Click Handler
+        function setupLogoClickHandler() {
+            logo.onclick = function() {
+                document.body.style.animation = 'fadeOut 0.5s forwards';
+                setTimeout(() => {
+                    window.location.href = easterEggActive ? "safely.html" : "home.html";
+                }, 500);
+            };
+        }
+
+        // Smooth Audio Fade Out
+        function fadeOutAudio(audio) {
+            let volume = audio.volume;
+            const fadeOutInterval = setInterval(() => {
+                if (volume > 0) {
+                    volume = Math.max(0, volume - 0.1);
+                    audio.volume = volume;
+                } else {
+                    audio.pause();
+                    audio.volume = 1;
+                    clearInterval(fadeOutInterval);
+                }
+            }, 50);
+        }
+
+        // Hover Sounds
+        function setupHoverSounds() {
+            logo.addEventListener('mouseenter', () => {
+                if (easterEggActive && easterEggHoverSound) {
+                    easterEggHoverSound.currentTime = 0;
+                    easterEggHoverSound.volume = 1;
+                    easterEggHoverSound.play().catch(() => console.log("Easter egg sound failed"));
+                } else if (hoverSound) {
+                    hoverSound.currentTime = 0;
+                    hoverSound.volume = 1;
+                    hoverSound.play().catch(() => console.log("Hover sound failed"));
+                }
+                isHovering = true;
+            });
+            
+            logo.addEventListener('mouseleave', () => {
+                if (easterEggActive && easterEggHoverSound) {
+                    fadeOutAudio(easterEggHoverSound);
+                } else if (hoverSound) {
+                    fadeOutAudio(hoverSound);
+                }
+                isHovering = false;
+            });
+        }
+
+        // Theme Toggle
+        function toggleTheme() {
+            body.classList.toggle('light-mode');
+            themeToggle.textContent = body.classList.contains('light-mode') ? '🌙' : '☀️';
+        }
+
+        // Fullscreen Toggle
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log(`Error attempting to enable fullscreen: ${err.message}`);
+                });
+                fullscreenToggle.textContent = '⤢';
+            } else {
+                document.exitFullscreen();
+                fullscreenToggle.textContent = '⛶';
+            }
+        }
+
+        // Language Menu
+        function toggleLanguageMenu(e) {
+            e.stopPropagation();
+            if (languageMenu.classList.contains('active')) {
+                closeLanguageMenu();
+            } else {
+                languageMenu.classList.add('active');
+                resetLanguageAnimations();
+            }
+        }
+
+        function closeLanguageMenuOnClick(e) {
+            if (!languageMenu.contains(e.target) && e.target !== languageBtn) {
+                closeLanguageMenu();
+            }
+        }
+
+        function closeLanguageMenu() {
+            if (languageMenu.classList.contains('active')) {
+                languageMenu.classList.add('closing');
+                languageMenu.addEventListener('transitionend', function handler() {
+                    languageMenu.classList.remove('active', 'closing');
+                    languageMenu.removeEventListener('transitionend', handler);
+                }, { once: true });
+            }
+        }
+
+        function resetLanguageAnimations() {
+            document.querySelectorAll('.language-option').forEach(option => {
+                option.style.animation = 'none';
+                void option.offsetWidth;
+                option.style.animation = '';
+            });
+        }
+
+        // Mouse Follow Animation
+        function followMouse() {
+            const factor = isHovering ? 0.05 : 0.03;
+            wrapperX += (mouseX - wrapperX) * factor;
+            wrapperY += (mouseY - wrapperY) * factor;
+            
+            logoWrapper.style.transform = `
+                translate(-50%, -50%)
+                translate(${wrapperX}px, ${wrapperY}px)
+            `;
+            
+            requestAnimationFrame(followMouse);
+        }
+
+        // Page Load
+        function loadComplete() {
+            setTimeout(() => {
+                loader.style.opacity = '0';
+                loader.addEventListener('transitionend', () => {
+                    loader.style.display = 'none';
+                    logoWrapper.style.opacity = '1';
+                }, { once: true });
+
+                document.addEventListener('mousemove', (e) => {
+                    mouseX = (e.clientX - window.innerWidth / 2) * 0.2;
+                    mouseY = (e.clientY - window.innerHeight / 2) * 0.2;
+                });
+            }, 2000);
+        }
+
+        // Random Hint
+        function showRandomHint() {
+            const hints = easterEggActive ? 
+                languageOptions[currentLanguage].easterHints : 
+                languageOptions[currentLanguage].hints;
+            const randomHint = hints[Math.floor(Math.random() * hints.length)];
+            const randomX = Math.random() * (window.innerWidth - 100);
+            const randomY = Math.random() * (window.innerHeight - 50);
+            hint.style.left = `${randomX}px`;
+            hint.style.top = `${randomY}px`;
+            hint.textContent = randomHint;
+            hint.style.opacity = '1';
+            setTimeout(() => {
+                hint.style.opacity = '0';
+                setTimeout(showRandomHint, 1000); // Changed to 1 second delay for 4-second cycle
+            }, 3000); // Displayed for 3 seconds
+        }
+
+        // Block Dev Tools
+        function blockDevTools() {
+            document.addEventListener('keydown', (e) => {
+                if (
+                    e.key === 'F12' ||
+                    (e.ctrlKey && e.shiftKey && e.key === 'I') ||
+                    (e.ctrlKey && e.key === 'u')
+                ) {
+                    e.preventDefault();
+                    alert(languageOptions[currentLanguage].devToolsMessage);
+                }
+            });
+
+            (function checkDevTools() {
+                const widthThreshold = window.outerWidth - window.innerWidth > 160;
+                const heightThreshold = window.outerHeight - window.innerHeight > 160;
+                if (widthThreshold || heightThreshold) {
+                    document.body.innerHTML = `<h1>${languageOptions[currentLanguage].devToolsMessage}</h1>`;
+                }
+                setTimeout(checkDevTools, 1000);
+            })();
+        }
+
+        // Force full reload on page load
+        window.addEventListener('pageshow', (event) => {
+            if (event.persisted) {
+                window.location.reload();
+            } else {
+                init();
+            }
+        });
+
+        // Resize Canvas
+        window.addEventListener('resize', () => {
+            initParticles();
+        });
+    </script>
+</body>
+</html>
